@@ -52,7 +52,20 @@ const getContact =asyncHandler  (async (req,res)=>{
 //@access public 
 
 const updateContact =asyncHandler (async (req,res)=>{
-   res.status(200).send({mesaage: `Update contact for ${req.params.id}`});
+   const contact= await Contact.findById(req.params.id);
+
+   if(!contact)
+   {
+      res.status(404);
+      throw new Error("Contact not found")
+   }
+
+   const updatedContact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {new : true}
+   )
+   res.status(200).send(updatedContact);
 })
 
 
@@ -61,7 +74,16 @@ const updateContact =asyncHandler (async (req,res)=>{
 //@access public 
 
 const deleteContact =asyncHandler (async (req,res)=>{
-   res.status(200).send({message: `Delete contact of ${req.params.id}`});
+   const contact= await Contact.findById(req.params.id);
+
+   if(!contact)
+   {
+      res.status(404);
+      throw new Error("Contact not found")
+   }
+
+   await Contact.findByIdAndDelete(req.params.id);
+   res.status(200).send(contact);
 })
 
 
