@@ -1,7 +1,7 @@
 const asyncHandler= require('express-async-handler');
 const User = require('../models/userModel'); 
 const bcrypt = require('bcrypt')
-const json = require('jsonwebtoken')
+const jwt = require('jsonwebtoken')
 
 //@desc Register a user
 //@route POST /api/users/register
@@ -37,8 +37,6 @@ const registerUser = asyncHandler(async (req,res)=>{
           res.status(400);
           throw new Error("User data is not valid")
         }
-        
-   res.json({message: "Register the user"})
 })
 
 //@desc Login a user
@@ -51,7 +49,24 @@ const loginUser = asyncHandler(async (req,res)=>{
           res.status(400);
           throw new Error("All fields are mandatory");
      }
-     res.json({message : "Login user"})
+     const user = await User.findOne({email})
+
+     //compare password and hashed password
+     if(user && (await bcrypt.compare(password , user.password))){
+          const accesToken= jwt.sign({
+               user:{
+                    username: user.username,
+                    email:user.email,
+                    id:user.id,
+               },
+          },process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: "2m"}
+     );
+     res.status(200).json({accesToken});
+     } else{
+          res.status(401)
+          throw new Error('email or password is not valid')
+     }
 })
 
 
